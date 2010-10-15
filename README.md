@@ -6,14 +6,14 @@ A Gradle plugin that configures the Groovy plugin to use the Groovy Eclipse comp
 Building
 --------
 
-You'll need to use Gradle 0.9-rc-1.
+You'll need to use Gradle 0.9-rc-1 or later.
 
 Run `gradle install` to build the plugin into the local maven repository.
 
 Using the plugin
 ----------------
 
-Add the following to your build script:
+The plugin works with Gradle 0.9-rc-1 or later. To use it, add the following to your build script:
 
     buildscript {
         repositories {

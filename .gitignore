@@ -4,5 +4,7 @@
 *.iml
 *.ipr
 *.iws
+.classpath
+.project
 testProject/build
 testProject/.gradle
