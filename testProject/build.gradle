@@ -1,0 +1,24 @@
+buildscript {
+    repositories {
+        def repo = mavenRepo(urls: "file://localhost/$projectDir/../repo/")
+        repo.setSnapshotTimeout(0L)
+    }
+    dependencies {
+        classpath 'org.gradle:eclipseCompiler:0.1-SNAPSHOT'
+    }
+}
+
+apply plugin: 'groovy'
+apply plugin: 'groovy-eclipse'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    groovy 'org.codehaus.groovy:groovy:1.7.3'
+    testCompile('org.spockframework:spock-core:0.4-groovy-1.7') {
+        exclude module: 'groovy-all'
+    }
+    testCompile 'junit:junit:4.8.1'
+}
