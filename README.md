@@ -1,7 +1,7 @@
 What is it?
 -----------
 
-A Gradle plugin which configures the Groovy plugin to use the Groovy Eclipse compiler.
+A Gradle plugin that configures the Groovy plugin to use the Groovy Eclipse compiler.
 
 Building
 --------
@@ -13,10 +13,11 @@ Run `gradle install` to build the plugin into the local maven repository.
 Using the plugin
 ----------------
 
+Add the following to your build script:
+
     buildscript {
         repositories {
-            def repo = mavenRepo(urls: uri("${System.getProperty('user.home')}/.m2/repository"))
-            repo.setSnapshotTimeout(0L)
+            mavenRepo(urls: uri("${System.getProperty('user.home')}/.m2/repository"))
         }
         dependencies {
             classpath 'org.gradle:eclipseCompiler:0.1-SNAPSHOT'
