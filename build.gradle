@@ -14,11 +14,3 @@ dependencies {
     compile 'org.codehaus.groovy:groovy-eclipse-batch:0.5.0'
     compile gradleApi()
 }
-
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            repository(url: "file://localhost/$projectDir/repo/")
-        }
-    }
-}

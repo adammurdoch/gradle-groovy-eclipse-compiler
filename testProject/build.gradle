@@ -1,6 +1,6 @@
 buildscript {
     repositories {
-        def repo = mavenRepo(urls: "file://localhost/$projectDir/../repo/")
+        def repo = mavenRepo(urls: uri("${System.getProperty('user.home')}/.m2/repository"))
         repo.setSnapshotTimeout(0L)
     }
     dependencies {
