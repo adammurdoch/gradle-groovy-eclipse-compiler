@@ -1,3 +1,18 @@
+/*
+ * Copyright 2010 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.gradle;
 
 import org.eclipse.jdt.core.compiler.CompilationProgress;
@@ -27,6 +42,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * {@link org.gradle.api.Plugin} that configures each instance of {@link org.gradle.api.tasks.compile.GroovyCompile}
+ * to use the groovy eclipse compiler instead of the groovyc compiler.
+ */
 public class EclipseGroovyCompilerPlugin implements Plugin<Project> {
     private static URLClassLoader adapterClassLoader;
 
@@ -39,6 +58,7 @@ public class EclipseGroovyCompilerPlugin implements Plugin<Project> {
     }
 
     private GroovyJavaJointCompiler createCompiler() {
+        // Classloader hackery to work around Gradle's poor classloader model. This will get fixed after Gradle 0.9 is out.
         try {
             return (GroovyJavaJointCompiler) createClassLoader().loadClass(EclipseBackedGroovyJavaJointCompiler.class.getName()).newInstance();
         } catch (Exception e) {
@@ -81,7 +101,6 @@ public class EclipseGroovyCompilerPlugin implements Plugin<Project> {
     public static class EclipseBackedGroovyJavaJointCompiler implements GroovyJavaJointCompiler {
         private final GroovyCompileOptions groovyCompileOptions = new GroovyCompileOptions();
         private final CompileOptions compileOptions = new CompileOptions();
-        private List<File> groovyClasspath = Collections.emptyList();
         private String sourceCompatibility;
         private String targetCompatibility;
         private FileCollection source;
@@ -93,7 +112,7 @@ public class EclipseGroovyCompilerPlugin implements Plugin<Project> {
         }
 
         public void setGroovyClasspath(Iterable<File> classpath) {
-            groovyClasspath = GUtil.addLists(classpath);
+            // Don't care
         }
 
         public CompileOptions getCompileOptions() {
@@ -132,6 +151,8 @@ public class EclipseGroovyCompilerPlugin implements Plugin<Project> {
             args.add("-d");
             args.add(destinationDir.getAbsolutePath());
             args.add("-1.5");
+
+            // TODO - add the options
 
             for (File file : source) {
                 args.add(file.getAbsolutePath());
