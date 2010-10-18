@@ -4,8 +4,13 @@ What is it?
 A Gradle plugin that configures the Java and Groovy plugins to use the Groovy Eclipse compiler instead of the default
 javac and groovyc compilers.
 
-Building
---------
+Why would I want use it?
+------------------------
+
+See (http://contraptionsforprogramming.blogspot.com/2010/09/where-are-all-my-stubs.html)
+
+Building the plugin
+-------------------
 
 You'll need to use Gradle 0.9-rc-1. It does not work with earlier or later Gradle releases.
 
