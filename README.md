@@ -7,7 +7,7 @@ javac and groovyc compilers.
 Why would I want use it?
 ------------------------
 
-See (http://contraptionsforprogramming.blogspot.com/2010/09/where-are-all-my-stubs.html)
+See http://contraptionsforprogramming.blogspot.com/2010/09/where-are-all-my-stubs.html
 
 Building the plugin
 -------------------
