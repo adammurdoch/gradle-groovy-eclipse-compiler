@@ -20,7 +20,7 @@ The plugin works with Gradle 0.9-rc-1 or later. To use it, add the following to 
             mavenRepo(urls: uri("${System.getProperty('user.home')}/.m2/repository"))
         }
         dependencies {
-            classpath 'org.gradle:eclipseCompiler:0.1-SNAPSHOT'
+            classpath 'org.gradle:groovy-eclipse:0.1-SNAPSHOT'
         }
     }
 
