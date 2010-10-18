@@ -18,8 +18,7 @@ The plugin works with Gradle 0.9-rc-1. To use it, you need to:
 
 1.  load the plugin from the local maven repository using a `buildscript { }` section
 2.  apply the `groovy-eclipse` plugin.
-3.  apply any of the `java', `java-base`, `groovy` or `groovy-base` plugins. The plugin does not do anything on its own
-    without one of these plugins applied.
+3.  apply any of the `java`, `java-base`, `groovy` or `groovy-base` plugins. The plugin does not do anything on its own.
 
 Here's an example:
 
