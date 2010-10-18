@@ -21,7 +21,6 @@ import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.file.FileCollection;
-import org.gradle.api.internal.AbstractClassPathProvider;
 import org.gradle.api.internal.tasks.compile.GroovyJavaJointCompiler;
 import org.gradle.api.internal.tasks.compile.IncrementalGroovyCompiler;
 import org.gradle.api.tasks.WorkResult;
@@ -31,11 +30,12 @@ import org.gradle.api.tasks.compile.GroovyCompileOptions;
 import org.gradle.util.ClasspathUtil;
 import org.gradle.util.FilteringClassLoader;
 import org.gradle.util.GUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -48,6 +48,7 @@ import java.util.List;
  */
 public class EclipseGroovyCompilerPlugin implements Plugin<Project> {
     private static URLClassLoader adapterClassLoader;
+    private static final Logger LOGGER = LoggerFactory.getLogger(EclipseGroovyCompilerPlugin.class);
 
     public void apply(Project project) {
         project.getTasks().withType(GroovyCompile.class).allTasks(new Action<GroovyCompile>() {
@@ -69,17 +70,13 @@ public class EclipseGroovyCompilerPlugin implements Plugin<Project> {
     private static URLClassLoader createClassLoader() {
         if (adapterClassLoader == null) {
             List<URL> classpath = new ArrayList<URL>();
-            for (URL url : ClasspathUtil.getClasspath(EclipseGroovyCompilerPlugin.class.getClassLoader())) {
-                if (url.getPath().contains("groovy-eclipse-batch-")) {
+            List<URL> pluginClasspath = ClasspathUtil.getClasspath(EclipseGroovyCompilerPlugin.class.getClassLoader());
+            for (URL url : pluginClasspath) {
+                if (url.getPath().contains("groovy-eclipse-")) {
                     classpath.add(url);
                 }
             }
-            File ownClasspath = AbstractClassPathProvider.getClasspathForClass(EclipseGroovyCompilerPlugin.class);
-            try {
-                classpath.add(ownClasspath.toURI().toURL());
-            } catch (MalformedURLException e) {
-                throw new RuntimeException("Could not build compiler adapter classpath.", e);
-            }
+            LOGGER.debug("Using compiler adapter classpath: {}", classpath);
 
             FilteringClassLoader parentClassLoader = new FilteringClassLoader(GroovyJavaJointCompiler.class.getClassLoader());
             parentClassLoader.allowPackage("org.gradle.api");
