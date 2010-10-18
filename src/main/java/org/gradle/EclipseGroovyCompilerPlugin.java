@@ -21,9 +21,14 @@ import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.file.FileCollection;
+import org.gradle.api.internal.project.AntBuilderFactory;
+import org.gradle.api.internal.project.ProjectInternal;
 import org.gradle.api.internal.tasks.compile.GroovyJavaJointCompiler;
 import org.gradle.api.internal.tasks.compile.IncrementalGroovyCompiler;
+import org.gradle.api.internal.tasks.compile.IncrementalJavaCompiler;
+import org.gradle.api.internal.tasks.compile.JavaCompiler;
 import org.gradle.api.tasks.WorkResult;
+import org.gradle.api.tasks.compile.Compile;
 import org.gradle.api.tasks.compile.CompileOptions;
 import org.gradle.api.tasks.compile.GroovyCompile;
 import org.gradle.api.tasks.compile.GroovyCompileOptions;
@@ -43,22 +48,38 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * {@link org.gradle.api.Plugin} that configures each instance of {@link org.gradle.api.tasks.compile.GroovyCompile}
- * to use the groovy eclipse compiler instead of the groovyc compiler.
+ * {@link org.gradle.api.Plugin} that configures each instance of {@link org.gradle.api.tasks.compile.Compile} and
+ * {@link org.gradle.api.tasks.compile.GroovyCompile} to use the groovy eclipse compiler instead of the javac or groovyc
+ * compiler.
  */
 public class EclipseGroovyCompilerPlugin implements Plugin<Project> {
     private static URLClassLoader adapterClassLoader;
     private static final Logger LOGGER = LoggerFactory.getLogger(EclipseGroovyCompilerPlugin.class);
 
-    public void apply(Project project) {
+    public void apply(final Project project) {
         project.getTasks().withType(GroovyCompile.class).allTasks(new Action<GroovyCompile>() {
             public void execute(GroovyCompile groovyCompile) {
-                groovyCompile.setCompiler(new IncrementalGroovyCompiler(createCompiler(), groovyCompile.getOutputs()));
+                groovyCompile.setCompiler(new IncrementalGroovyCompiler(createGroovyCompiler(), groovyCompile.getOutputs()));
+            }
+        });
+        project.getTasks().withType(Compile.class).allTasks(new Action<Compile>() {
+            public void execute(Compile compile) {
+                ProjectInternal projectInternal = (ProjectInternal) project;
+                compile.setJavaCompiler(new IncrementalJavaCompiler(createJavaCompiler(), projectInternal.getServiceRegistryFactory().get(AntBuilderFactory.class), compile.getOutputs()));
             }
         });
     }
 
-    private GroovyJavaJointCompiler createCompiler() {
+    private JavaCompiler createJavaCompiler() {
+        // Classloader hackery to work around Gradle's poor classloader model. This will get fixed after Gradle 0.9 is out.
+        try {
+            return (JavaCompiler) createClassLoader().loadClass(EclipseBackedGroovyJavaJointCompiler.class.getName()).newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException("Could not load compiler adapter.", e);
+        }
+    }
+
+    private GroovyJavaJointCompiler createGroovyCompiler() {
         // Classloader hackery to work around Gradle's poor classloader model. This will get fixed after Gradle 0.9 is out.
         try {
             return (GroovyJavaJointCompiler) createClassLoader().loadClass(EclipseBackedGroovyJavaJointCompiler.class.getName()).newInstance();
@@ -81,6 +102,7 @@ public class EclipseGroovyCompilerPlugin implements Plugin<Project> {
             FilteringClassLoader parentClassLoader = new FilteringClassLoader(GroovyJavaJointCompiler.class.getClassLoader());
             parentClassLoader.allowPackage("org.gradle.api");
             parentClassLoader.allowPackage("org.gradle.util");
+            parentClassLoader.allowPackage("org.slf4j");
 
             // check class is not visible from parent class loader
             try {
@@ -95,7 +117,7 @@ public class EclipseGroovyCompilerPlugin implements Plugin<Project> {
         return adapterClassLoader;
     }
 
-    public static class EclipseBackedGroovyJavaJointCompiler implements GroovyJavaJointCompiler {
+    public static class EclipseBackedGroovyJavaJointCompiler implements GroovyJavaJointCompiler, JavaCompiler {
         private final GroovyCompileOptions groovyCompileOptions = new GroovyCompileOptions();
         private final CompileOptions compileOptions = new CompileOptions();
         private String sourceCompatibility;
@@ -109,6 +131,10 @@ public class EclipseGroovyCompilerPlugin implements Plugin<Project> {
         }
 
         public void setGroovyClasspath(Iterable<File> classpath) {
+            // Don't care
+        }
+
+        public void setDependencyCacheDir(File file) {
             // Don't care
         }
 
@@ -143,13 +169,28 @@ public class EclipseGroovyCompilerPlugin implements Plugin<Project> {
             Main compiler = new Main(stdout, stderr, false, Collections.<Object, Object>emptyMap(), new CompilationProgressImpl());
             List<String> args = new ArrayList<String>();
 
+            classpath.add(destinationDir);
+
             args.add("-cp");
             args.add(GUtil.join(classpath, File.pathSeparator));
             args.add("-d");
             args.add(destinationDir.getAbsolutePath());
-            args.add("-1.5");
+            if (GUtil.isTrue(sourceCompatibility)) {
+                args.add("-source");
+                args.add(sourceCompatibility);
+            }
+            if (GUtil.isTrue(targetCompatibility)) {
+                args.add("-target");
+                args.add(targetCompatibility);
+            }
+            if (compileOptions.isDebug()) {
+                args.add("-g");
+            }
+            args.addAll(compileOptions.getCompilerArgs());
 
-            // TODO - add the options
+            // TODO - add the remaining options
+
+            LOGGER.info("Using compile args: {}", args);
 
             for (File file : source) {
                 args.add(file.getAbsolutePath());

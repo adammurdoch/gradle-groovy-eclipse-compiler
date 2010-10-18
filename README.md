@@ -1,19 +1,26 @@
 What is it?
 -----------
 
-A Gradle plugin that configures the Groovy plugin to use the Groovy Eclipse compiler.
+A Gradle plugin that configures the Java and Groovy plugins to use the Groovy Eclipse compiler instead of the javac and
+groovyc compilers.
 
 Building
 --------
 
-You'll need to use Gradle 0.9-rc-1 or later.
+You'll need to use Gradle 0.9-rc-1. It does not work with earlier or later Gradle releases.
 
 Run `gradle install` to build the plugin into the local maven repository.
 
 Using the plugin
 ----------------
 
-The plugin works with Gradle 0.9-rc-1 or later. To use it, add the following to your build script:
+The plugin works with Gradle 0.9-rc-1. To use it, you need to
+1.  load the plugin from the local maven repository using a `buildscript { }` section
+2.  apply the `groovy-eclipse` plugin.
+3.  apply any of the `java', `java-base`, `groovy` or `groovy-base` plugins. The plugin does not do anything on its own
+    without one of these plugins applied.
+
+Here's an example:
 
     buildscript {
         repositories {
@@ -24,5 +31,5 @@ The plugin works with Gradle 0.9-rc-1 or later. To use it, add the following to 
         }
     }
 
-    apply plugin: 'groovy'
+    apply plugin: 'groovy' // or apply plugin: 'java'
     apply plugin: 'groovy-eclipse'
