@@ -18,10 +18,10 @@ package org.gradle;
 import org.eclipse.jdt.core.compiler.CompilationProgress;
 import org.eclipse.jdt.internal.compiler.batch.Main;
 import org.gradle.api.Action;
+import org.gradle.api.AntBuilder;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.file.FileCollection;
-import org.gradle.api.internal.project.AntBuilderFactory;
 import org.gradle.api.internal.project.ProjectInternal;
 import org.gradle.api.internal.tasks.compile.GroovyJavaJointCompiler;
 import org.gradle.api.internal.tasks.compile.IncrementalGroovyCompiler;
@@ -65,7 +65,7 @@ public class EclipseGroovyCompilerPlugin implements Plugin<Project> {
         project.getTasks().withType(Compile.class).allTasks(new Action<Compile>() {
             public void execute(Compile compile) {
                 ProjectInternal projectInternal = (ProjectInternal) project;
-                compile.setJavaCompiler(new IncrementalJavaCompiler(createJavaCompiler(), projectInternal.getServiceRegistryFactory().get(AntBuilderFactory.class), compile.getOutputs()));
+                compile.setJavaCompiler(new IncrementalJavaCompiler(createJavaCompiler(), projectInternal.getServices().getFactory(AntBuilder.class), compile.getOutputs()));
             }
         });
     }

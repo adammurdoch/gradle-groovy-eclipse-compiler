@@ -12,14 +12,14 @@ Why would I want use it?
 Building the plugin
 -------------------
 
-You'll need to use Gradle 0.9-rc-1. It does not work with earlier or later Gradle releases.
+You'll need to use Gradle 0.9-rc-2 or later. It does not work with earlier Gradle releases.
 
 Run `gradle install` to build the plugin and install it into the local maven repository.
 
 Using the plugin
 ----------------
 
-The plugin works with Gradle 0.9-rc-1. To use it, you need to:
+The plugin works with Gradle 0.9-rc-2 or later. To use it, you need to:
 
 1.  load the plugin from the local maven repository using a `buildscript { }` section
 2.  apply the `groovy-eclipse` plugin.
